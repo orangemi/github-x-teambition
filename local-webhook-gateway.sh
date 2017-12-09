@@ -1,0 +1,1 @@
+ssh -NT -R 0.0.0.0:4022:localhost:6900 admin@imxiaomi.com
