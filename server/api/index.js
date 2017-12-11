@@ -49,9 +49,15 @@ router.all('/webhooks/:runnerId([a-f0-9]{24})', parser(), async (ctx) => {
   const {runnerId} = ctx.params
   const {body} = ctx.request
 
-  const repo = body.repo
+  const repo = body.repository
   const commits = body.commits
-  if (!repo || !commits) ctx.throw(400)
+
+  console.log(repo, commits, body)
+
+  if (!repo || !commits) {
+    ctx.status = 204
+    return
+  }
 
   const headCommit = commits[0]
   const committer = headCommit.committer
