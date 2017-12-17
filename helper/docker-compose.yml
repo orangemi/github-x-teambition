@@ -1,0 +1,14 @@
+version: '2'
+services:
+  mongodb:
+    image: mongo:3.4.10
+    network_mode: default
+    ports:
+    - 127.0.0.1:27017:27017
+    container_name: mongodb
+    #command: [mongod, --config, /etc/mongo/mongo.conf.yml]
+    volumes:
+    - ./data:/data/db
+    # - ./mongo.conf.yml:/etc/mongo/mongo.conf.yml:ro
+    # - ./secret:/etc/mongo/secret:ro
+    

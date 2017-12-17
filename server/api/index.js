@@ -52,8 +52,6 @@ router.all('/webhooks/:runnerId([a-f0-9]{24})', parser(), async (ctx) => {
   const repo = body.repository
   const commits = body.commits
 
-  console.log(repo, commits, body)
-
   if (!repo || !commits) {
     ctx.status = 204
     return
@@ -86,20 +84,25 @@ router.all('/webhooks/:runnerId([a-f0-9]{24})', parser(), async (ctx) => {
     const runner = await db.repoRunner.findOne({_id: runnerId})
     const url = config.TEAMBITION_HOST + '/appstore/api/developer/chats/message'
     const taskId = /[a-f0-9]{24}$/.exec(taskUrl)[0]
-    const resp = await urllib.request(url, {
-      headers: {'x-api-key': config.TEAMBITION_MESSAGE_ROBOT_KEY},
-      method: 'post',
-      contentType: 'json',
-      data: {
-        _organizationId: runner.organizationId, // config.TEAMBITION_ORGANIZATION_ID,
-        object: { _id: taskId, type: 'task' },
-        // projects: [config.TEAMBITION_SALES_FINANCE_PROJECT_ID],
-        messageType: 'text',
-        text: message
-      },
-      dataType: 'json'
-    })
-    console.log(url, taskId, resp.status)
+    try {
+      const resp = await urllib.request(url, {
+        headers: {'x-api-key': config.TEAMBITION_MESSAGE_ROBOT_KEY},
+        method: 'post',
+        contentType: 'json',
+        data: {
+          toType: 'object',
+          _organizationId: runner.organizationId, // config.TEAMBITION_ORGANIZATION_ID,
+          object: { _id: taskId, type: 'task' },
+          // projects: [config.TEAMBITION_SALES_FINANCE_PROJECT_ID],
+          messageType: 'text',
+          text: message
+        },
+        dataType: 'json'
+      })
+      console.log(url, taskId, resp.status, resp.data)
+    } catch (e) {
+      console.error('post error', e)
+    }
   }
 
   ctx.status = 204
@@ -159,6 +162,6 @@ function createMessage (repo, commits, committer) {
   lines.push(`Git Commit For [${repo.full_name}](${repo.html_url})`)
   lines.push(`commiter: ${committer.username} ${committer.email} `)
   lines.push('')
-  commits.map(commit => `[${commit.id.substring(0, 7)}](${commit.url}) ${commit.message.substring(0, 20)}`).forEach(lines.push)
+  commits.map(commit => `[${commit.id.substring(0, 7)}](${commit.url}) ${commit.message.substring(0, 20)}`).forEach(line => lines.push(line))
   return lines.join('\n')
 }
